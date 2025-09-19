@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cuestionario de Estudio: PC1 Instalaciones</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-main: #0D1117;
+            --bg-secondary: #161B22;
+            --border-color: #30363D;
+            --text-primary: #C9D1D9;
+            --text-secondary: #8B949E;
+            --accent-cyan: #22d3ee;
+            --feedback-green: #22c55e;
+            --feedback-red: #ef4444;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-main);
+            color: var(--text-primary);
+            overflow: hidden;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .mesh-gradient {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            background: radial-gradient(ellipse at 70% 20%, rgba(34, 211, 238, 0.15) 0%, transparent 50%),
+                        radial-gradient(ellipse at 30% 80%, rgba(52, 211, 153, 0.15) 0%, transparent 50%),
+                        radial-gradient(ellipse at 50% 50%, rgba(99, 102, 241, 0.1) 0%, transparent 50%);
+            animation: gradient-animation 20s ease infinite;
+        }
+
+        @keyframes gradient-animation {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .quiz-container {
+            background-color: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            width: 95%;
+            max-width: 800px;
+            height: 90vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .option-btn {
+            background-color: var(--bg-main);
+            border: 1px solid var(--border-color);
+            transition: all 0.2s ease-in-out;
+        }
+
+        .option-btn:hover:not(:disabled) {
+            border-color: var(--accent-cyan);
+            color: var(--accent-cyan);
+        }
+
+        .option-btn.correct {
+            background-color: var(--feedback-green);
+            border-color: var(--feedback-green);
+            color: white;
+        }
+        
+        .option-btn.incorrect {
+            background-color: var(--feedback-red);
+            border-color: var(--feedback-red);
+            color: white;
+        }
+
+        .analysis-panel {
+            background-color: var(--bg-main);
+            border-top: 1px solid var(--border-color);
+        }
+        
+        #question-svg-container svg {
+            max-width: 100%;
+            height: auto;
+            max-height: 200px;
+            margin: 1rem auto;
+            display: block;
+        }
+
+    </style>
+</head>
+<body>
+    <div class="mesh-gradient"></div>
+    <div id="quiz-container" class="quiz-container p-6 flex flex-col">
+        <!-- Contenido dinámico del cuestionario -->
+    </div>
+
+    <script>
+        const questions = [
+            {
+                question: "Según la Norma IS.010, ¿cuál es la dotación de agua fría para una vivienda unifamiliar ubicada en un lote de 550 m²?",
+                options: ["1900 L/d", "2100 L/d", "2200 L/d", "2300 L/d"],
+                answer: 2,
+                analysis: "La Norma IS.010 establece en su tabla de dotaciones para viviendas unifamiliares que para un lote con área entre 501 m² y 600 m², la dotación correspondiente es de 2200 L/d. Esta cifra incluye el consumo doméstico y el riego de jardines."
+            },
+            {
+                question: "¿Cuál es la dotación de agua caliente requerida para un departamento con 4 dormitorios?",
+                options: ["390 L/d", "420 L/d", "450 L/d", "500 L/d"],
+                answer: 1,
+                analysis: "La Norma IS.010 especifica que para una residencia con 4 dormitorios, la dotación diaria de agua caliente es de 420 litros. Esta cantidad es parte de la dotación total de agua fría."
+            },
+            {
+                question: "En un sistema de abastecimiento indirecto con cisterna y tanque elevado, ¿qué proporción de la dotación diaria debe tener como mínimo cada componente?",
+                options: ["Cisterna: 1/2, Tanque Elevado: 1/2", "Cisterna: 2/3, Tanque Elevado: 1/3", "Cisterna: 3/4, Tanque Elevado: 1/3", "Cisterna: Totalidad, Tanque Elevado: 1/3"],
+                answer: 2,
+                analysis: "El Art. 2.4, inciso e) de la Norma IS.010 estipula que para un sistema combinado, la capacidad de la cisterna no será menor de las 3/4 partes de la dotación diaria, y la del tanque elevado no será menor de 1/3 de dicha dotación."
+            },
+            {
+                question: "Se tiene un local comercial de mercancías secas con un área útil de 150 m². ¿Cuál es su dotación diaria de agua fría?",
+                options: ["500 L/d", "750 L/d", "900 L/d", "1200 L/d"],
+                answer: 2,
+                analysis: "La dotación para locales comerciales de mercancías secas es de 6 L/d por m² de área útil. Por lo tanto, el cálculo es: $150 \\text{ m}^2 \\times 6 \\text{ L/d/m}^2 = 900 \\text{ L/d}$. Este valor es superior al mínimo de 500 L/d estipulado."
+            },
+            {
+                question: "Calcule la velocidad del flujo en una tubería de alimentación de 2 pulgadas de diámetro si transporta un caudal de $1.84 \\text{ L/s}$.",
+                options: ["0.55 m/s", "0.91 m/s", "1.23 m/s", "1.50 m/s"],
+                answer: 1,
+                analysis: "Primero, convertimos las unidades. Caudal $Q = 1.84 \\text{ L/s} = 0.00184 \\text{ m}^3/s$. Diámetro $D = 2 \\text{ pulg} = 0.0508 \\text{ m}$. El área es $A = \\frac{\\pi D^2}{4} = \\frac{\\pi (0.0508)^2}{4} \\approx 0.002027 \\text{ m}^2$. Usando la ecuación de continuidad $Q = V \\times A$, despejamos la velocidad: $V = \\frac{Q}{A} = \\frac{0.00184}{0.002027} \\approx 0.908 \\text{ m/s}$."
+            },
+            {
+                question: "¿Cuál es la dotación de agua para un cine con una sala de 100 asientos?",
+                options: ["300 L/d", "500 L/d", "1000 L/d", "3 L/asiento/hora"],
+                answer: 0,
+                analysis: "La Norma IS.010 indica para cines, teatros y auditorios una dotación de 3 L por asiento. Para 100 asientos, la dotación total es $100 \\text{ asientos} \\times 3 \\text{ L/asiento} = 300 \\text{ L/d}$."
+            },
+            {
+                question: "Para un sistema de abastecimiento que solo utiliza cisterna (sin tanque elevado), ¿cuál es la capacidad mínima requerida?",
+                options: ["1/3 de la dotación diaria", "3/4 de la dotación diaria", "La totalidad de la dotación diaria (mínimo 1000 L)", "La mitad de la dotación diaria"],
+                answer: 2,
+                analysis: "Según el Art. 2.4, inciso d) de la Norma IS.010, cuando solo existe cisterna, su capacidad será como mínimo igual a la dotación diaria, con un volumen no menor a 1000 L."
+            },
+            {
+                question: "Determine el consumo promedio diario de desagüe (Qpd) para una edificación cuyo consumo de agua potable (Qp) es de $1.37 \\text{ L/s}$.",
+                options: ["1.37 L/s", "1.10 L/s", "0.80 L/s", "1.64 L/s"],
+                answer: 1,
+                analysis: "El consumo promedio de desagüe se estima como un porcentaje del consumo de agua potable. Comúnmente se utiliza un factor de retorno del 80%. Por lo tanto, $Q_{pd} = Q_p \\times 0.80 = 1.37 \\text{ L/s} \\times 0.80 \\approx 1.096 \\text{ L/s}$."
+            },
+            {
+                question: "Un hotel cuenta con 20 dormitorios. ¿Cuál es la dotación total de agua fría para los dormitorios?",
+                options: ["5000 L/d", "7500 L/d", "10000 L/d", "15000 L/d"],
+                answer: 2,
+                analysis: "La Norma IS.010 establece una dotación de 500 L por dormitorio para hoteles. Para 20 dormitorios, el cálculo es: $20 \\text{ dormitorios} \\times 500 \\text{ L/dormitorio} = 10000 \\text{ L/d}$."
+            },
+            {
+                question: "¿Cuál es la capacidad horaria mínima que debe tener el equipo de producción de agua caliente para un hotel?",
+                svg: `<svg viewBox="0 0 200 100" xmlns="http://www.w3.org/2000/svg">
+                        <defs>
+                            <linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="0%">
+                            <stop offset="0%" style="stop-color:rgb(59,130,246);stop-opacity:1" />
+                            <stop offset="100%" style="stop-color:rgb(239,68,68);stop-opacity:1" />
+                            </linearGradient>
+                        </defs>
+                        <rect x="10" y="10" width="60" height="80" rx="5" fill="#1E293B" stroke="#475569" stroke-width="2"/>
+                        <text x="40" y="30" font-family="Inter" font-size="10" fill="#C9D1D9" text-anchor="middle">Agua Fría</text>
+                        <path d="M 70 50 L 90 50" stroke="#3b82f6" stroke-width="2" marker-end="url(#arrow-blue)"/>
+                        <rect x="90" y="25" width="40" height="50" rx="5" fill="#334155" stroke="#475569" stroke-width="2"/>
+                        <text x="110" y="55" font-family="Inter" font-size="8" fill="#C9D1D9" text-anchor="middle">Calentador</text>
+                        <text x="110" y="45" font-family="Inter" font-size="10" fill="#facc15" text-anchor="middle">1/10 D.D.</text>
+                        <path d="M 130 50 L 190 50" stroke="#ef4444" stroke-width="2" marker-end="url(#arrow-red)"/>
+                        <text x="160" y="45" font-family="Inter" font-size="10" fill="#C9D1D9" text-anchor="middle">Agua Caliente</text>
+                        <defs>
+                            <marker id="arrow-blue" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                            <path d="M 0 0 L 10 5 L 0 10 z" fill="#3b82f6" />
+                            </marker>
+                            <marker id="arrow-red" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                            <path d="M 0 0 L 10 5 L 0 10 z" fill="#ef4444" />
+                            </marker>
+                        </defs>
+                        </svg>`,
+                options: ["1/5 de la dotación diaria", "1/7 de la dotación diaria", "1/10 de la dotación diaria", "2/5 de la dotación diaria"],
+                answer: 2,
+                analysis: "La tabla del Art. 3.4 de la Norma IS.010 indica que para hoteles, la capacidad horaria del equipo de producción de agua caliente debe ser 1/10 de la dotación diaria de agua caliente."
+            },
+            {
+                question: "Una discoteca tiene un área de 500 m². ¿Cuál es su dotación de agua fría?",
+                options: ["3,000 L/d", "7,500 L/d", "10,000 L/d", "15,000 L/d"],
+                answer: 3,
+                analysis: "Para discotecas, casinos y salas de baile, la dotación es de 30 L/d por m² de área. El cálculo es: $500 \\text{ m}^2 \\times 30 \\text{ L/d/m}^2 = 15,000 \\text{ L/d}$."
+            },
+            {
+                question: "Si se instala una tubería de agua para consumo humano y una de desagüe de forma paralela, ¿cuál es la distancia mínima horizontal y vertical que debe respetarse según la Norma IS.010?",
+                options: ["0.20m horizontal, 0.10m vertical", "0.50m horizontal, 0.15m vertical", "1.00m horizontal, 0.25m vertical", "No hay distancia mínima especificada"],
+                answer: 1,
+                analysis: "El Art. 2.3 inciso e) especifica que las tuberías de agua potable enterradas deberán alejarse lo más posible de los desagües; por ningún motivo esta distancia será menor de 0.50 m medida en horizontal, ni menos de 0.15 m por encima del desagüe (en el eje vertical)."
+            },
+            {
+                question: "En un edificio multifamiliar, ¿en base a qué criterio se determina la dotación de agua para cada departamento?",
+                options: ["Área total del departamento", "Número de baños", "Número de habitantes", "Número de dormitorios"],
+                answer: 3,
+                analysis: "La Norma IS.010, en su Art. 2.2 inciso b), establece una tabla que relaciona directamente la dotación de agua por departamento con el número de dormitorios que este posee (ej: 1 dormitorio = 500 L/d, 2 dormitorios = 850 L/d, etc.)."
+            },
+            {
+                question: "¿Cuál es la dotación de agua para áreas verdes?",
+                options: ["1 L/d por m²", "2 L/d por m²", "5 L/d por m²", "Depende del tipo de planta"],
+                answer: 1,
+                analysis: "El Art. 2.2 inciso u) de la Norma IS.010 es claro al indicar que la dotación de agua para áreas verdes será de 2 L/d por m². No se incluyen áreas pavimentadas o sin sembrar."
+            },
+            {
+                question: "Para una piscina con sistema de recirculación de las aguas de rebose, la dotación de agua es de:",
+                options: ["10 L/d por m² de proyección horizontal", "25 L/d por m² de proyección horizontal", "30 L/d por m² de área de vestuarios", "125 L/h por m³"],
+                answer: 0,
+                analysis: "La tabla del Art. 2.2, inciso h) indica que para piscinas con recirculación de las aguas de rebose, la dotación es de 10 L/d por m² de proyección horizontal de la piscina."
+            },
+            {
+                question: "Un local educacional tiene 20 alumnos y 5 docentes, todos no residentes. Calcule la dotación diaria de agua.",
+                options: ["1000 L/d", "1250 L/d", "2500 L/d", "5000 L/d"],
+                answer: 1,
+                analysis: "Para alumnado y personal no residente, la dotación es de 50 L por persona. El total de personas es $20 + 5 = 25$. La dotación total es $25 \\text{ personas} \\times 50 \\text{ L/persona} = 1250 \\text{ L/d}$."
+            },
+            {
+                question: "¿Cuál es la presión estática máxima permitida en una red de distribución de agua fría según la norma?",
+                options: ["30 m.c.a.", "40 m.c.a.", "50 m.c.a.", "60 m.c.a."],
+                answer: 2,
+                analysis: "El Art. 2.3, inciso c) de la Norma IS.010 establece que la presión estática máxima no debe ser superior a 50 m de columna de agua (0,490 MPa)."
+            },
+            {
+                question: "En un sistema de bombeo para una edificación (excepto unifamiliares), ¿cuál es el número mínimo de equipos de bombeo requeridos?",
+                options: ["Uno, con un repuesto almacenado", "Dos, de funcionamiento alternado", "Tres, uno siempre en stand-by", "Depende del caudal de la demanda"],
+                answer: 1,
+                analysis: "El Art. 2.5, inciso d) indica que, salvo en el caso de viviendas unifamiliares, el sistema de bombeo deberá contar como mínimo con dos equipos de bombeo de funcionamiento alternado para garantizar la continuidad del servicio."
+            },
+            {
+                question: "Un departamento de 3 dormitorios requiere una dotación de agua caliente de 390 L/d. ¿Cuál es la capacidad mínima recomendada para el tanque de almacenamiento de la terma?",
+                options: ["55 L", "78 L", "130 L", "390 L"],
+                answer: 1,
+                analysis: "Para residencias unifamiliares y multifamiliares, la capacidad del tanque de almacenamiento se calcula como 1/5 de la dotación diaria de agua caliente. Por lo tanto: $C_a = \\frac{1}{5} \\times 390 \\text{ L} = 78 \\text{ L}$. Se debe seleccionar un calentador con una capacidad comercial igual o superior a 78 litros."
+            },
+            {
+                question: "Se tiene un bar con un área de 70 m². ¿Cuál es su dotación de agua fría?",
+                options: ["1500 L/d", "3500 L/d", "4200 L/d", "5000 L/d"],
+                answer: 1,
+                analysis: "Según la tabla para bares, fuentes de soda y cafeterías (Art. 2.2, inciso r), para un área entre 61 y 100 m², la dotación es de 50 L/m². El cálculo es $70 \\text{ m}^2 \\times 50 \\text{ L/m}^2 = 3500 \\text{ L/d}$."
+            },
+            {
+                question: "El diámetro mínimo de un colector que recibe la descarga de un inodoro es de:",
+                options: ["50 mm (2\")", "75 mm (3\")", "100 mm (4\")", "150 mm (6\")"],
+                answer: 2,
+                analysis: "El Art. 6.2, inciso d) de la Norma IS.010 es explícito: 'El diámetro mínimo que reciba la descarga de un inodoro será de 100 mm (4\")'."
+            },
+            {
+                question: "La pendiente mínima para un colector de desagüe de 100 mm (4\") de diámetro es:",
+                options: ["0.5%", "1.0%", "1.5%", "2.0%"],
+                answer: 1,
+                analysis: "Según el Art. 6.2, inciso c), la pendiente de los colectores y de los ramales de desagüe interiores será uniforme y no menor de 1% para diámetros de 100 mm (4\") y mayores."
+            },
+            {
+                question: "¿Cuál es la altura mínima del sello de agua en una trampa o sifón para prevenir el paso de gases?",
+                options: ["20 mm", "30 mm", "50 mm", "100 mm"],
+                answer: 2,
+                analysis: "El Art. 6.2, inciso i) indica que todo punto de contacto entre el sistema de desagüe y los ambientes debe estar protegido por un sello de agua con una altura no inferior a 0.05 m (50 mm), ni mayor de 0.10 m (100 mm)."
+            },
+            {
+                question: "Un restaurante tiene un área de comedores de 60 m². ¿Cuál es la dotación de agua fría?",
+                options: ["2000 L/d", "2400 L/d", "3000 L/d", "3600 L/d"],
+                answer: 2,
+                analysis: "La tabla del Art. 2.2, inciso d) indica que para un área de comedores entre 41 y 100 m², la dotación es de 50 L por m². El cálculo es: $60 \\text{ m}^2 \\times 50 \\text{ L/m}^2 = 3000 \\text{ L/d}$."
+            },
+            {
+                question: "Para un sistema de abastecimiento que solo utiliza tanque elevado, su capacidad será como mínimo igual a la dotación diaria, con un volumen no menor a:",
+                options: ["500 L", "1000 L", "1500 L", "2000 L"],
+                answer: 1,
+                analysis: "El Art. 2.4, inciso c) de la Norma IS.010 especifica que cuando sólo exista tanque elevado, su capacidad será como mínimo igual a la dotación diaria, con un volumen no menor a 1000 L."
+            },
+            {
+                question: "Una vivienda unifamiliar tiene un área de lote de 1230 m². ¿Cuál es su dotación diaria de agua fría?",
+                options: ["2800 L/d", "3000 L/d", "3400 L/d", "3800 L/d"],
+                answer: 1,
+                analysis: "Según la tabla de dotaciones para viviendas unifamiliares de la Norma IS.010, para un lote con un área entre 1201 m² y 1400 m², la dotación correspondiente es de 3000 L/d."
+            },
+            {
+                question: "¿Cuál es la dotación de agua para un estacionamiento de 2000 m²?",
+                options: ["1000 L/d", "2000 L/d", "4000 L/d", "8000 L/d"],
+                answer: 2,
+                analysis: "Para garajes y parques de estacionamiento de vehículos, la norma (Art. 2.2, inciso o) establece una dotación de 2 L por m² de área. Por lo tanto: $2000 \\text{ m}^2 \\times 2 \\text{ L/m}^2 = 4000 \\text{ L/d}$."
+            },
+            {
+                question: "Un gimnasio tiene 50 m² de área útil. Calcule la dotación de agua caliente.",
+                options: ["250 L/d", "325 L/d", "500 L/d", "10 L/d por persona"],
+                answer: 2, // No hay opción correcta, pero la más cercana en los problemas es 325, probablemente de un 65% de área útil. Voy a usar la norma.
+                analysis: "Según el Art. 3.2, inciso e) de la Norma IS.010, la dotación de agua caliente para gimnasios es de 10 L/m² de área útil. Por lo tanto, el cálculo es: $50 \\text{ m}^2 \\times 10 \\text{ L/m}^2 = 500 \\text{ L/d}$."
+            },
+            {
+                question: "Para una sala de baile de 100 m², ¿cuál es la dotación de agua fría?",
+                options: ["300 L/d", "1000 L/d", "3000 L/d", "5000 L/d"],
+                answer: 2,
+                analysis: "Para discotecas, casinos y salas de baile, la dotación es de 30 L/d por m². El cálculo es $100 \\text{ m}^2 \\times 30 \\text{ L/m}^2 = 3000 \\text{ L/d}$."
+            },
+            {
+                question: "En una oficina, la dotación de agua fría se calcula a razón de:",
+                options: ["6 L/d por m² de área útil", "20 L/d por persona", "500 L/d por cada 100 m²", "50 L/d por artefacto sanitario"],
+                answer: 0,
+                analysis: "El Art. 2.2, inciso i) de la Norma IS.010, establece que la dotación de agua para oficinas se calculará a razón de 6 L/d por m² de área útil del local."
+            },
+            {
+                question: "La presión mínima de salida en aparatos sanitarios comunes (sin válvulas especiales) debe ser de:",
+                svg: `<svg viewBox="0 0 200 100" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M 50 90 L 50 40 Q 50 20 70 20 L 130 20 Q 150 20 150 40 L 150 50" fill="none" stroke="#C9D1D9" stroke-width="2"/>
+                        <path d="M 150 50 L 140 55 L 140 70 L 160 70 L 160 55 Z" fill="#161B22" stroke="#C9D1D9" stroke-width="2"/>
+                        <path d="M 150 70 L 150 90" stroke="#3b82f6" stroke-width="2" stroke-dasharray="4 2"/>
+                        <path d="M 155 75 L 150 90 L 145 75" fill="none" stroke="#3b82f6" stroke-width="2"/>
+                        <path d="M 30 10 L 170 10" stroke="#475569" stroke-width="1"/>
+                        <text x="100" y="85" font-family="Inter" font-size="10" fill="#22d3ee" text-anchor="middle">P > 2 m.c.a.</text>
+                        <text x="175" y="12" font-family="Inter" font-size="8" fill="#8B949E" text-anchor="start">Nivel de Tanque</text>
+                        </svg>`,
+                options: ["0.5 m.c.a.", "1.0 m.c.a.", "1.5 m.c.a.", "2.0 m.c.a."],
+                answer: 3,
+                analysis: "El Art. 2.3, inciso d) de la Norma IS.010 indica que la presión mínima de salida de los aparatos sanitarios será de 2 m de columna de agua (0,020 MPa), salvo equipos especiales que requieran mayor presión."
+            },
+            {
+                question: "¿Qué sistema de abastecimiento es más recomendable para una vivienda con suministro de agua no constante, poca presión y bajo presupuesto?",
+                options: ["Directo", "Indirecto con tanque elevado", "Indirecto con cisterna y equipo hidroneumático", "Indirecto con cisterna, bombeo y tanque elevado"],
+                answer: 1,
+                analysis: "El sistema directo no funciona por la baja presión y el suministro inconstante. Los sistemas con cisterna y bombeo (hidroneumático o a tanque elevado) son más costosos en instalación y operación. El sistema indirecto con solo tanque elevado es la solución más económica y efectiva: almacena agua cuando hay suministro y la distribuye por gravedad, solucionando el problema de presión en pisos altos con un costo de mantenimiento casi nulo."
+            },
+            {
+                question: "El volumen mínimo de regulación en un sistema directo, ya sea con tanque elevado o cisterna, es de:",
+                options: ["500 L", "1000 L (1 m³)", "1500 L (1.5 m³)", "No se aplica volumen de regulación a sistemas directos"],
+                answer: 1,
+                analysis: "Aunque la pregunta mezcla conceptos (el sistema directo no usa tanques de regulación), la Norma IS-010 establece un volumen mínimo de 1000 L (1 m³) para cualquier depósito de almacenamiento (cisterna o tanque elevado) cuando se usan en sistemas indirectos. Esta es la referencia mínima obligatoria."
+            },
+            {
+                question: "En un edificio, se deben instalar válvulas de interrupción como mínimo en varios puntos. ¿Cuál de los siguientes NO es uno de ellos?",
+                options: ["Inmediatamente después del medidor general.", "En cada piso o sección de la red.", "En la tubería de succión de cada bomba.", "En cada servicio sanitario con más de tres aparatos."],
+                answer: 2,
+                analysis: "El Art. 2.1, inciso l) enumera los puntos obligatorios. El inciso c) del Art. 2.5 menciona una válvula en la succión solo si esta trabaja con presión positiva, no es una regla general para toda bomba, a diferencia de los otros tres puntos que son mandatorios para la red de distribución."
+            },
+            {
+                question: "Calcular la dotación de agua para un hospital con 100 camas.",
+                options: ["30,000 L/d", "50,000 L/d", "60,000 L/d", "100,000 L/d"],
+                answer: 2,
+                analysis: "Según la Norma IS.010, Art. 2.2, inciso s), la dotación para hospitales y clínicas de hospitalización es de 600 L/d por cama. Por lo tanto: $100 \\text{ camas} \\times 600 \\text{ L/cama} = 60,000 \\text{ L/d}$."
+            },
+            {
+                question: "El diámetro del tubo de rebose de una cisterna de 10,000 L de capacidad debe ser como mínimo:",
+                options: ["50 mm (2\")", "75 mm (3\")", "100 mm (4\")", "150 mm (6\")"],
+                answer: 1,
+                analysis: "La tabla del Art. 2.4, inciso m) indica que para una capacidad de depósito entre 5001 L y 12000 L, el diámetro mínimo del tubo de rebose es de 75 mm (3\")."
+            },
+            {
+                question: "Si se usa un sistema hidroneumático, el volumen mínimo del tanque de almacenamiento será:",
+                options: ["1/3 del consumo diario", "3/4 del consumo diario", "Igual al consumo diario (mínimo 1000 L)", "La mitad del consumo diario"],
+                answer: 2,
+                analysis: "El Art. 2.4, inciso f) establece que en caso de utilizar sistemas hidroneumáticos, el volumen mínimo de almacenamiento (en la cisterna) será igual al consumo diario, con un volumen mínimo de 1000 L."
+            },
+            {
+                question: "Una clínica dental cuenta con 1 unidad dental. ¿Cuál es su dotación de agua fría?",
+                options: ["500 L/d", "1000 L/d", "1500 L/d", "2000 L/d"],
+                answer: 1,
+                analysis: "La Norma IS.010, en la tabla para locales de salud (Art. 2.2, inciso s), especifica una dotación de 1000 L/d por unidad dental para clínicas dentales."
+            },
+            {
+                question: "La velocidad MÍNIMA del agua en las tuberías de distribución para evitar sedimentación es de:",
+                options: ["0.30 m/s", "0.50 m/s", "0.60 m/s", "1.00 m/s"],
+                answer: 2,
+                analysis: "El Art. 2.3, inciso f) de la Norma IS.010 establece que, para el cálculo del diámetro de las tuberías de distribución, la velocidad mínima será de 0.60 m/s."
+            },
+            {
+                question: "La capacidad de cada equipo de bombeo (en un sistema alternado) debe ser, como mínimo, equivalente a la máxima demanda simultánea de la edificación y en ningún caso inferior a la necesaria para llenar el tanque elevado en:",
+                options: ["1 hora", "2 horas", "4 horas", "8 horas"],
+                answer: 1,
+                analysis: "El Art. 2.5, inciso e) es claro en este punto: la capacidad de cada bomba no debe ser inferior a la necesaria para llenar el tanque elevado en dos horas."
+            }
+        ];
+
+        let currentQuizQuestions = [];
+        let currentQuestionIndex = 0;
+        let score = 0;
+        let audioCtx;
+        
+        // --- Audio Generation ---
+        function createAudioContext() {
+            if (audioCtx) return;
+            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        }
+
+        function playSound(type) {
+            if (!audioCtx) return;
+            const oscillator = audioCtx.createOscillator();
+            const gainNode = audioCtx.createGain();
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(audioCtx.destination);
+            
+            gainNode.gain.setValueAtTime(0, audioCtx.currentTime);
+            gainNode.gain.linearRampToValueAtTime(0.3, audioCtx.currentTime + 0.01);
+
+            if (type === 'correct') {
+                oscillator.type = 'sine';
+                oscillator.frequency.setValueAtTime(600, audioCtx.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.00001, audioCtx.currentTime + 0.3);
+            } else if (type === 'incorrect') {
+                oscillator.type = 'square';
+                oscillator.frequency.setValueAtTime(200, audioCtx.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.00001, audioCtx.currentTime + 0.4);
+            } else { // click
+                oscillator.type = 'triangle';
+                oscillator.frequency.setValueAtTime(800, audioCtx.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.00001, audioCtx.currentTime + 0.1);
+            }
+            
+            oscillator.start(audioCtx.currentTime);
+            oscillator.stop(audioCtx.currentTime + 0.3);
+        }
+
+        // --- Quiz Logic ---
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+        }
+
+        function startQuiz() {
+            shuffleArray(questions);
+            currentQuizQuestions = questions.slice(0, 20);
+            currentQuestionIndex = 0;
+            score = 0;
+            displayQuestion();
+        }
+
+        function displayQuestion() {
+            const quizContainer = document.getElementById('quiz-container');
+            if (currentQuestionIndex < currentQuizQuestions.length) {
+                const questionData = currentQuizQuestions[currentQuestionIndex];
+                
+                let svgHtml = questionData.svg ? `<div id="question-svg-container" class="my-4">${questionData.svg}</div>` : '';
+                
+                let optionsHtml = questionData.options.map((option, index) =>
+                    `<button onclick="selectAnswer(${index}, ${questionData.answer})" class="option-btn w-full text-left p-4 rounded-lg my-2">
+                        <span class="font-bold mr-3">${String.fromCharCode(65 + index)}</span> ${option}
+                    </button>`
+                ).join('');
+
+                quizContainer.innerHTML = `
+                    <div class="flex-grow overflow-y-auto pr-2">
+                        <div class="flex justify-between items-center mb-4">
+                            <h2 class="text-xl font-bold text-cyan-400">Pregunta ${currentQuestionIndex + 1} de ${currentQuizQuestions.length}</h2>
+                            <div class="text-lg font-semibold">Puntaje: ${score} / ${currentQuizQuestions.length}</div>
+                        </div>
+                        <div id="question-text" class="text-lg mb-4">${questionData.question}</div>
+                        ${svgHtml}
+                        <div id="options-container">
+                            ${optionsHtml}
+                        </div>
+                    </div>
+                    <div id="analysis-container" class="pt-4 mt-4 hidden"></div>
+                `;
+                MathJax.typesetPromise();
+            } else {
+                showFinalScore();
+            }
+        }
+        
+        function selectAnswer(selectedIndex, correctIndex) {
+            createAudioContext();
+            
+            const optionsContainer = document.getElementById('options-container');
+            const buttons = optionsContainer.getElementsByTagName('button');
+            const questionData = currentQuizQuestions[currentQuestionIndex];
+
+            for (let btn of buttons) {
+                btn.disabled = true;
+            }
+
+            if (selectedIndex === correctIndex) {
+                buttons[selectedIndex].classList.add('correct');
+                score++;
+                playSound('correct');
+            } else {
+                buttons[selectedIndex].classList.add('incorrect');
+                buttons[correctIndex].classList.add('correct');
+                playSound('incorrect');
+            }
+            
+            showAnalysis(questionData.analysis);
+        }
+
+        function showAnalysis(analysisText) {
+            const analysisContainer = document.getElementById('analysis-container');
+            analysisContainer.innerHTML = `
+                <div class="analysis-panel p-4 rounded-lg">
+                    <h3 class="font-bold text-cyan-400 mb-2">Análisis de la Respuesta</h3>
+                    <p class="text-gray-300">${analysisText}</p>
+                </div>
+                <button onclick="nextQuestion()" class="w-full mt-4 bg-cyan-600 hover:bg-cyan-700 text-white font-bold py-3 px-4 rounded-lg transition-colors">
+                    Siguiente Pregunta
+                </button>
+            `;
+            analysisContainer.classList.remove('hidden');
+            MathJax.typesetPromise();
+        }
+
+        function nextQuestion() {
+            playSound('click');
+            currentQuestionIndex++;
+            displayQuestion();
+        }
+
+        function showFinalScore() {
+            const quizContainer = document.getElementById('quiz-container');
+            const percentage = Math.round((score / currentQuizQuestions.length) * 100);
+            let feedbackMessage = '';
+            if (percentage >= 80) {
+                feedbackMessage = '¡Excelente trabajo! Tienes un sólido conocimiento de la materia.';
+            } else if (percentage >= 60) {
+                feedbackMessage = '¡Buen esfuerzo! Sigue repasando para afianzar los conceptos.';
+            } else {
+                feedbackMessage = '¡No te desanimes! Este es un buen punto de partida para repasar los temas clave.';
+            }
+
+            quizContainer.innerHTML = `
+                <div class="flex flex-col items-center justify-center h-full text-center">
+                    <h2 class="text-3xl font-bold text-cyan-400 mb-4">Cuestionario Finalizado</h2>
+                    <p class="text-xl mb-2">Tu puntaje final es:</p>
+                    <p class="text-5xl font-bold mb-6">${score} / ${currentQuizQuestions.length}</p>
+                    <p class="text-lg mb-8">${feedbackMessage}</p>
+                    <button onclick="startQuiz()" class="bg-cyan-600 hover:bg-cyan-700 text-white font-bold py-3 px-6 rounded-lg transition-colors text-xl">
+                        Intentar de Nuevo
+                    </button>
+                </div>
+            `;
+        }
+
+        // --- Initial Load ---
+        document.addEventListener('DOMContentLoaded', () => {
+             const quizContainer = document.getElementById('quiz-container');
+             quizContainer.innerHTML = `
+                <div class="flex flex-col items-center justify-center h-full text-center">
+                    <h1 class="text-3xl font-bold text-cyan-400 mb-4">Cuestionario de Estudio: PC1 Instalaciones</h1>
+                    <p class="text-lg text-gray-400 mb-8">Pon a prueba tus conocimientos sobre la Norma IS.010 y cálculos de dotaciones. Se seleccionarán 20 preguntas aleatorias.</p>
+                    <button onclick="startQuiz(); createAudioContext(); playSound('click');" class="bg-cyan-600 hover:bg-cyan-700 text-white font-bold py-4 px-8 rounded-lg transition-colors text-xl animate-pulse">
+                        Iniciar Cuestionario
+                    </button>
+                </div>
+            `;
+        });
+
+    </script>
+</body>
+</html>
